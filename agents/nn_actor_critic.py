@@ -1,4 +1,4 @@
-# nn_agent_skeleton.py
+# agents/nn_actor_critic.py
 # Minimal CNN encoder + actor-critic heads (discrete actions).
 import torch
 import torch.nn as nn

@@ -172,7 +172,7 @@ python -m scripts.train_ppo_basic \
   --tb_log_dir ./logs/tb_mwh_ppo_v2 \
   --checkpoint_dir ./checkpoints_mwh \
   --checkpoint_name mwh_ppo_v2 \
-  --save_every 0
+  --save_every 80
 
 # attempting
 CUDA_VISIBLE_DEVICES=0 python -m scripts.train_ppo_basic \
@@ -1893,6 +1893,62 @@ CUDA_VISIBLE_DEVICES=2 python -m scripts.train_ppo_basic \
   --checkpoint_name mwh_ppo_jepa_td3run4_fullft \
   --save_every 80 \
   --jepa_ckpt /data/patrick/16831RL/checkpoints/mwh_cnn_jepa_coswarm_e200_lr1p5en3_wmup0p1_nmb5_varw0p8_std1_covw1_mask0p6_td3_run4.pt
+
+# GRPO Agent
+# 1 run grpo agent training
+CUDA_VISIBLE_DEVICES=5 python -m scripts.train_grpo_basic \
+  --scenario basic \
+  --action_space usual \
+  --total_iterations 200 \
+  --steps_per_iteration 8192 \
+  --batch_size 128 \
+  --learning_rate 5e-5 \
+  --clip_coef 0.08 \
+  --entropy_coef 0.01 \
+  --grpo_epochs 2 \
+  --grpo_group_size 16 \
+  --grpo_target_kl 0.015 \
+  --grpo_kl_beta 0.01 \
+  --grpo_use_return_per_step \
+  --grpo_use_std_norm \
+  --grpo_adv_clip 3.0 \
+  --grpo_ref_mode ema \
+  --grpo_ref_tau 0.005 \
+  --eval_deterministic \
+  --eval_episodes 10 \
+  --eval_interval 1 \
+  --eval_log_dir /data/patrick/16831RL/logs \
+  --eval_log_name basic_grpo_eval.npz \
+  --tb_log_dir /data/patrick/16831RL/logs/tb_basic_grpo \
+  --checkpoint_dir /data/patrick/16831RL/checkpoints \
+  --checkpoint_name basic_grpo \
+  --save_every 80
+
+CUDA_VISIBLE_DEVICES=5 python -m scripts.train_grpo_basic \
+  --scenario my_way_home \
+  --action_space no_shoot \
+  --total_iterations 300 \
+  --steps_per_iteration 16384 \
+  --batch_size 256 \
+  --learning_rate 5e-5 \
+  --clip_coef 0.05 \
+  --entropy_coef 0.02 \
+  --grpo_epochs 2 \
+  --grpo_group_size 32 \
+  --grpo_target_kl 0.02 \
+  --grpo_kl_beta 0.02 \
+  --grpo_use_return_per_step \
+  --grpo_adv_clip 5.0 \
+  --grpo_ref_mode ema \
+  --grpo_ref_tau 0.01 \
+  --eval_episodes 10 \
+  --eval_interval 1 \
+  --eval_log_dir /data/patrick/16831RL/logs \
+  --eval_log_name mwh_grpo_eval.npz \
+  --tb_log_dir /data/patrick/16831RL/logs/tb_mwh_grpo \
+  --checkpoint_dir /data/patrick/16831RL/checkpoints_mwh \
+  --checkpoint_name mwh_grpo \
+  --save_every 80
 
 # Plot the learning curves
 ./scripts/plot_tb_basic_avg_return.sh 2 

@@ -14,6 +14,7 @@ from train.replay_buffer import RolloutBuffer
 from eval.evaluation import evaluate_policy, EvalLogger
 from agents.random_agent import RandomAgent
 from agents.ppo_agent import PPOAgent
+from agents.grpo_agent import GRPOAgent
 from configs.ppo_config import PPOConfig
 
 
@@ -126,7 +127,16 @@ class RLTrainer:
                 jepa_ckpt_path=getattr(self.config, "jepa_ckpt", None),
                 jepa_partial_unfreeze=getattr(self.config, "jepa_partial_unfreeze", 0),
             )
-
+        elif agent_type == "grpo":
+            return GRPOAgent(
+                obs_shape=self.obs_shape,
+                n_actions=self.n_actions,
+                feat_dim=self.config.feat_dim,
+                backbone=self.config.backbone,        # will be "cnn" here
+                freeze_backbone=self.config.freeze_backbone,
+                jepa_ckpt_path=getattr(self.config, "jepa_ckpt", None),
+                jepa_partial_unfreeze=getattr(self.config, "jepa_partial_unfreeze", 0),
+            )            
         elif agent_type == "random":
             # Stateless random policy
             return RandomAgent(n_actions=self.n_actions)
@@ -264,13 +274,28 @@ class RLTrainer:
             rnd_int_mean = float(int_rewards_norm_cpu.mean().item())
             rnd_int_std = float(int_rewards_norm_cpu.std().item())
 
-        # Bootstrap value for the last state
-        obs_tensor = self._obs_to_tensor(obs)
-        with torch.no_grad():
-            last_value = float(self.agent.get_value(obs_tensor).item())
-
         # Compute returns and advantages using (possibly modified) rewards
-        self.buffer.compute_returns_and_advantages(last_value)
+        if self.agent_type == "grpo":
+            # policy-only GRPO: last_value is unused; pass 0 for API compatibility
+            last_value = 0.0
+            g = int(getattr(self.config, "grpo_group_size", 8))
+            use_std = bool(getattr(self.config, "grpo_use_std_norm", True))
+            eps = float(getattr(self.config, "grpo_eps", 1e-8))
+            self.buffer.compute_returns_and_group_advantages(
+                last_value=last_value,
+                group_size=g,
+                use_std_norm=use_std,
+                eps=eps,
+                use_return_per_step=bool(getattr(self.config, "grpo_use_return_per_step", True)),
+                length_normalize=bool(getattr(self.config, "grpo_length_normalize", True)),
+                adv_clip=getattr(self.config, "grpo_adv_clip", 5.0),
+            )
+        else:
+            # Bootstrap value for the last state
+            obs_tensor = self._obs_to_tensor(obs)
+            with torch.no_grad():
+                last_value = float(self.agent.get_value(obs_tensor).item())
+            self.buffer.compute_returns_and_advantages(last_value)
 
         self.total_envsteps += self.config.steps_per_iteration
 
