@@ -1,7 +1,15 @@
+Bottleneck
+gmpy2
+Jinja2
+networkx
+numexpr
+pandas==2.3.2
+pytz
+PyYAML
+tzdata
 absl-py==2.3.1
 annotated-types==0.7.0
 asttokens==3.0.0
-Bottleneck @ file:///croot/bottleneck_1731058641041/work
 box2d-py==2.3.5
 cachetools==5.5.2
 certifi==2025.8.3
@@ -25,7 +33,6 @@ future==1.0.0
 gitdb==4.0.12
 GitPython==3.1.45
 glfw==1.12.0
-gmpy2 @ file:///croot/gmpy2_1738085463648/work
 google-auth==2.40.3
 google-auth-oauthlib==0.4.6
 grpcio==1.74.0
@@ -38,22 +45,15 @@ imageio==2.27.0
 imageio-ffmpeg==0.4.8
 ipython==8.37.0
 jedi==0.19.2
-Jinja2 @ file:///croot/jinja2_1741710844255/work
 kiwisolver==1.4.9
 Markdown==3.9
 MarkupSafe==3.0.2
 matplotlib==3.9.4
 matplotlib-inline==0.1.7
-mkl-fft==1.3.1
-mkl-random @ file:///home/builder/ci_310/mkl_random_1641843545607/work
-mkl-service==2.4.0
 monotonic==1.6
 moviepy==1.0.3
-mpmath @ file:///croot/mpmath_1690848262763/work
 mujoco==2.2.1
 mujoco-py==2.1.2.14
-networkx @ file:///croot/networkx_1737039604450/work
-numexpr @ file:///croot/numexpr_1668713893690/work
 numpy==1.23.5
 nvidia-cublas-cu12==12.4.5.8
 nvidia-cuda-cupti-cu12==12.4.127
@@ -70,7 +70,6 @@ nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.4.127
 oauthlib==3.3.1
 packaging==25.0
-pandas @ file:///croot/pandas_1756466404410/work/dist/pandas-2.3.2-cp310-cp310-linux_x86_64.whl#sha256=18da92fe558a6dcb71cd1f94c07e392b60538d6297a73058fa4628bb1e4cdc28
 parso==0.8.5
 patchelf==0.17.2.4
 pexpect==4.9.0
@@ -93,12 +92,9 @@ PyOpenGL==3.1.10
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.1
-pytz @ file:///tmp/build/80754af9/pytz_1612215392582/work
 PyVirtualDisplay==3.0
-PyYAML @ file:///croot/pyyaml_1728657952215/work
 requests==2.32.5
 requests-oauthlib==2.0.0
--e git+https://github.com/Coslate/CMU_16831_Introduction_to_Robot_Learning.git@edc1c9364e8b677707ba8825e6fff00dfcd6fcb2#egg=rob831&subdirectory=hw3
 rsa==4.9.1
 sentry-sdk==2.39.0
 six==1.17.0
@@ -109,15 +105,13 @@ tensorboard==2.10.0
 tensorboard-data-server==0.6.1
 tensorboard-plugin-wit==1.8.1
 tensorboardX==2.5.1
-torch==2.5.1
-torchaudio==2.6.0+cu124
+torch==2.6.0+cu124
 torchvision==0.21.0+cu124
+torchaudio==2.6.0+cu124
 tqdm==4.67.1
 traitlets==5.14.3
-triton==3.1.0
 typing-inspection==0.4.1
 typing_extensions==4.15.0
-tzdata @ file:///croot/python-tzdata_1746123641790/work
 urllib3==2.5.0
 vizdoom==1.2.4
 wandb==0.22.0

@@ -1896,24 +1896,26 @@ CUDA_VISIBLE_DEVICES=2 python -m scripts.train_ppo_basic \
 
 # GRPO Agent
 # 1 run grpo agent training
-CUDA_VISIBLE_DEVICES=5 python -m scripts.train_grpo_basic \
+CUDA_VISIBLE_DEVICES=0 python -m scripts.train_grpo_basic \
   --scenario basic \
   --action_space usual \
-  --total_iterations 200 \
+  --total_iterations 300 \
   --steps_per_iteration 8192 \
   --batch_size 128 \
-  --learning_rate 5e-5 \
-  --clip_coef 0.08 \
+  --learning_rate 1e-4 \
+  --clip_coef 0.12 \
   --entropy_coef 0.01 \
-  --grpo_epochs 2 \
+  --grpo_eps 1e-4 \
+  --grpo_epochs 4 \
   --grpo_group_size 16 \
-  --grpo_target_kl 0.015 \
-  --grpo_kl_beta 0.01 \
-  --grpo_use_return_per_step \
+  --grpo_target_kl 0.08 \
+  --grpo_kl_beta 0.0 \
   --grpo_use_std_norm \
-  --grpo_adv_clip 3.0 \
+  --grpo_use_return_per_step \
+  --grpo_length_normalize \
+  --grpo_adv_clip 5.0 \
   --grpo_ref_mode ema \
-  --grpo_ref_tau 0.005 \
+  --grpo_ref_tau 0.01 \
   --eval_deterministic \
   --eval_episodes 10 \
   --eval_interval 1 \
@@ -1924,23 +1926,57 @@ CUDA_VISIBLE_DEVICES=5 python -m scripts.train_grpo_basic \
   --checkpoint_name basic_grpo \
   --save_every 80
 
-CUDA_VISIBLE_DEVICES=5 python -m scripts.train_grpo_basic \
-  --scenario my_way_home \
-  --action_space no_shoot \
+CUDA_VISIBLE_DEVICES=0 python -m scripts.train_grpo_basic \
+  --scenario basic \
+  --action_space usual \
   --total_iterations 300 \
+  --refine_iterations 180 \
   --steps_per_iteration 16384 \
   --batch_size 256 \
-  --learning_rate 5e-5 \
-  --clip_coef 0.05 \
-  --entropy_coef 0.02 \
+  --learning_rate 1e-4 \
+  --clip_coef 0.12 \
+  --entropy_coef 0.01 \
+  --grpo_eps 1e-4 \
   --grpo_epochs 2 \
-  --grpo_group_size 32 \
-  --grpo_target_kl 0.02 \
-  --grpo_kl_beta 0.02 \
+  --grpo_group_size 16 \
+  --grpo_target_kl 0.08 \
+  --grpo_kl_beta 0.0 \
+  --grpo_use_std_norm \
   --grpo_use_return_per_step \
   --grpo_adv_clip 5.0 \
   --grpo_ref_mode ema \
   --grpo_ref_tau 0.01 \
+  --eval_deterministic \
+  --eval_episodes 10 \
+  --eval_interval 1 \
+  --eval_log_dir /data/patrick/16831RL/logs \
+  --eval_log_name basic_grpo_eval_refine_s16384_b256_ge2.npz \
+  --tb_log_dir /data/patrick/16831RL/logs/tb_basic_grpo_refine_s16384_b256_ge2 \
+  --checkpoint_dir /data/patrick/16831RL/checkpoints \
+  --checkpoint_name basic_grpo_refine_s16384_b256_ge2 \
+  --save_every 80
+
+CUDA_VISIBLE_DEVICES=0 python -m scripts.train_grpo_basic \
+  --scenario my_way_home \
+  --action_space no_shoot \
+  --total_iterations 400 \
+  --steps_per_iteration 16384 \
+  --batch_size 256 \
+  --learning_rate 2e-4 \
+  --clip_coef 0.2 \
+  --entropy_coef 0.01 \
+  --grpo_eps 1e-4 \
+  --grpo_epochs 2 \
+  --grpo_group_size 16 \
+  --grpo_target_kl 0.03 \
+  --grpo_kl_beta 0.0 \
+  --grpo_use_std_norm \
+  --grpo_use_return_per_step \
+  --grpo_length_normalize \
+  --grpo_adv_clip 10.0 \
+  --grpo_ref_mode ema \
+  --grpo_ref_tau 0.01 \
+  --eval_deterministic \
   --eval_episodes 10 \
   --eval_interval 1 \
   --eval_log_dir /data/patrick/16831RL/logs \

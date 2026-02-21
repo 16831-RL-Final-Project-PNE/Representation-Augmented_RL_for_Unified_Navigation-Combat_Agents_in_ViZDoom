@@ -156,7 +156,7 @@ class RolloutBuffer:
                 traj_lens.append(L)
 
                 if use_return_per_step:
-                    traj_scores.append(ret / (L+eps))
+                    traj_scores.append(ret / (L+1e-8))
                 else:
                     traj_scores.append(ret)
 
@@ -171,7 +171,7 @@ class RolloutBuffer:
             traj_lens.append(L)
 
             if use_return_per_step:
-                traj_scores.append(ret / (L+eps))
+                traj_scores.append(ret / (L+1e-8))
             else:
                 traj_scores.append(ret)
 
@@ -252,7 +252,7 @@ class RolloutBuffer:
 
             obs_batch = self.observations[batch_idx].to(self.device)  # (B, T, 3, H, W)
             b, t, c, h, w = obs_batch.shape
-            obs_batch = obs_batch.view(b, t * c, h, w).float() / 255.0
+            obs_batch = obs_batch.reshape(b, t * c, h, w).float() / 255.0
 
             yield {
                 "observations": obs_batch,

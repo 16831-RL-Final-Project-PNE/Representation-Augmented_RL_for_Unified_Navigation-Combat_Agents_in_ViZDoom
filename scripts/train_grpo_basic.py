@@ -41,6 +41,7 @@ def main():
 
     # ----- GRPO training hyper-parameters -----
     parser.add_argument("--total_iterations", type=int, default=200)
+    parser.add_argument("--refine_iterations", type=int, default=None)
     parser.add_argument("--steps_per_iteration", type=int, default=8192)
     parser.add_argument("--batch_size", type=int, default=128)
     parser.add_argument("--learning_rate", type=float, default=1e-4)
@@ -52,7 +53,7 @@ def main():
     parser.add_argument(
         "--grpo_use_std_norm",
         action="store_true",
-        default=True,
+        default=False,
         help="If set, A_i = (R_i - mean_group) / std_group. (default True)",
     )
     parser.add_argument(
@@ -72,7 +73,7 @@ def main():
     parser.add_argument(
         "--grpo_use_return_per_step",
         action="store_true",
-        default=True,
+        default=False,
         help="Divide each return by the length of the trajectory",
     )
 
@@ -91,6 +92,7 @@ def main():
     parser.add_argument("--grpo_ref_mode", type=str, default="ema", choices=["ema", "hard"])
     parser.add_argument("--grpo_ref_tau", type=float, default=0.01)
     parser.add_argument("--grpo_ref_update_every", type=int, default=10)
+    parser.add_argument("--grpo_eps", type=float, default=1e-8)
 
     # ----- Evaluation settings -----
     parser.add_argument("--eval_episodes", type=int, default=10)
@@ -235,6 +237,7 @@ def main():
     # ----- GRPO config -----
     config = GRPOConfig(
         total_iterations=args.total_iterations,
+        refine_iterations=args.refine_iterations,
         steps_per_iteration=args.steps_per_iteration,
         batch_size=args.batch_size,
         learning_rate=args.learning_rate,
@@ -275,6 +278,7 @@ def main():
         grpo_ref_mode=args.grpo_ref_mode,
         grpo_ref_tau=args.grpo_ref_tau,
         grpo_ref_update_every=args.grpo_ref_update_every,
+        grpo_eps=args.grpo_eps,
     )
 
     trainer = RLTrainer(

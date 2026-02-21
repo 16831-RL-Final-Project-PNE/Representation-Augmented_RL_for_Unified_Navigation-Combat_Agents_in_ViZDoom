@@ -10,9 +10,9 @@ echo "[INFO] Using GPU: ${CUDA_VISIBLE_DEVICES}"
 
 python -m eval.plot_tb_avg_return \
   --logdirs \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td3_frozen \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td3_unfreeze1 \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td3_unfreeze2 \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td3_fullft \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td3_frozen \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td3_unfreeze1 \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td3_unfreeze2 \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td3_fullft \
   --tag Eval_AverageReturn \
   --output ./plots_mwh/mwh_eval_td3frozen_trans_return.png

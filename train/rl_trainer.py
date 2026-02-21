@@ -286,8 +286,8 @@ class RLTrainer:
                 group_size=g,
                 use_std_norm=use_std,
                 eps=eps,
-                use_return_per_step=bool(getattr(self.config, "grpo_use_return_per_step", True)),
-                length_normalize=bool(getattr(self.config, "grpo_length_normalize", True)),
+                use_return_per_step=bool(getattr(self.config, "grpo_use_return_per_step", False)),
+                length_normalize=bool(getattr(self.config, "grpo_length_normalize", False)),
                 adv_clip=getattr(self.config, "grpo_adv_clip", 5.0),
             )
         else:
@@ -453,6 +453,10 @@ class RLTrainer:
         """
         for iteration in range(self.config.total_iterations):
             print(f"\n\n********** Iteration {iteration} ************")
+
+            if self.config.refine_iterations is not None and iteration == self.config.refine_iterations:
+                self.config.entropy_coef = 0.005
+                self.config.grpo_epochs = 2
 
             # if RND is set, let rnd_int_coef decay to 0 through iterations
             if self.use_rnd and self.rnd_int_decay:

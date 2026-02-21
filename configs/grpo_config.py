@@ -5,6 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class GRPOConfig:
     total_iterations: int = 200
+    refine_iterations: int = None
     steps_per_iteration: int = 8192
     batch_size: int = 64
     learning_rate: float = 1e-4

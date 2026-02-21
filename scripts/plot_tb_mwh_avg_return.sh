@@ -11,13 +11,13 @@ echo "[INFO] Using GPU: ${CUDA_VISIBLE_DEVICES}"
 python -m eval.plot_tb_avg_return \
   --logdirs \
     ./logs/tb_mwh_ppo_v2 \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_dinov2 \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_dinov3 \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_rnd \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_dinov2_rnd \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_dinov3_rnd \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td1_frozen \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td2_frozen \
-    /data/patrick/16831RL/logs/tb_mwh_ppo_jepa_td3_frozen \
+    ./logs/data/patrick/logs/tb_mwh_ppo_dinov2 \
+    ./logs/data/patrick/logs/tb_mwh_ppo_dinov3 \
+    ./logs/data/patrick/logs/tb_mwh_ppo_rnd \
+    ./logs/data/patrick/logs/tb_mwh_ppo_dinov2_rnd \
+    ./logs/data/patrick/logs/tb_mwh_ppo_dinov3_rnd \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td1_frozen \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td2_frozen \
+    ./logs/data/patrick/logs/tb_mwh_ppo_jepa_td3_frozen \
   --tag Eval_AverageReturn \
   --output ./plots_mwh/mwh_eval_avg_return.png
