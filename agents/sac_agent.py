@@ -50,6 +50,7 @@ class ReplayBuffer:
     def __init__(self, obs_dim, act_dim, size, device, discrete_action: bool):
         self.obs_buf  = np.zeros((size, obs_dim), dtype=np.float32)  # (N, obs_dim)
         self.obs2_buf = np.zeros((size, obs_dim), dtype=np.float32)  # (N, obs_dim)
+        self.discrete_action = discrete_action
 
         if discrete_action:
             self.act_buf = np.zeros((size, 1), dtype=np.int64)      # (N, 1) int action id
@@ -88,7 +89,6 @@ class ReplayBuffer:
             obs=to_tensor(self.obs_buf[idxs], self.device),    # (B, obs_dim)
             obs2=to_tensor(self.obs2_buf[idxs], self.device),  # (B, obs_dim)
             act=act_tensor,  # discrete: (B,1) int64; continuous: (B,act_dim) float32
-            act=to_tensor(self.act_buf[idxs], self.device),    # (B, act_dim)
             rew=to_tensor(self.rew_buf[idxs], self.device),    # (B, 1)
             done=to_tensor(self.done_buf[idxs], self.device),  # (B, 1)
         )
@@ -256,7 +256,7 @@ class SACConfig:
     lr: float = 3e-4
     batch_size: int = 256
     hidden_sizes: tuple = (256, 256)
-    target_entropy: float = None  # if None, set to -act_dim
+    target_entropy: float = None  # if None, set to act_dim
     start_steps: int = 10000
     update_after: int = 1000
     update_every: int = 1
@@ -357,7 +357,8 @@ class SACAgent:
 
             probs, log_probs = self.actor.dist_info(obs)             # (B, A), (B, A)
             min_q_all = torch.min(self.q1(obs), self.q2(obs))        # (B, A)
-            actor_loss = (probs * (self.alpha * log_probs - min_q_all)).sum(dim=1).mean()
+            alpha = self.alpha.detach()
+            actor_loss = (probs * (alpha * log_probs - min_q_all)).sum(dim=1).mean()
 
             self.actor_opt.zero_grad(set_to_none=True); actor_loss.backward(); self.actor_opt.step()
 
@@ -431,7 +432,8 @@ class SACAgent:
             q2_new = self.q2(obs, a_new)                        # (B, 1)
             min_q_new = torch.min(q1_new, q2_new)               # (B, 1)
 
-            actor_loss = (self.alpha * logp_a_new - min_q_new).mean()  # scalar
+            alpha = self.alpha.detach()
+            actor_loss = (alpha * logp_a_new - min_q_new).mean()  # scalar
 
             self.actor_opt.zero_grad(set_to_none=True)
             actor_loss.backward()
@@ -449,7 +451,7 @@ class SACAgent:
                 # so we detach it to avoid backprop into actor from alpha loss.
                 entropy_est = -logp_a_new
 
-                # target_entropy is typically negative (e.g., -act_dim).
+                # With this entropy_est = -logp convention, target_entropy is positive and is default set to act_dim.
                 # This update adjusts alpha so that the policy entropy stays around the desired level.
                 alpha_loss = ((self.log_alpha) * (entropy_est - self.target_entropy).detach()).mean()  # scalar
 
@@ -532,6 +534,8 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu")
     parser.add_argument("--eval_every", type=int, default=50_000)
+    parser.add_argument("--discrete_action", action="store_true",
+                        help="Use SAC-Discrete for a discrete action space.")
     args = parser.parse_args()
 
     set_seed(args.seed)
@@ -541,16 +545,22 @@ def main():
     obs = reset_env(env)
 
     assert len(env.observation_space.shape) == 1
-    assert len(env.action_space.shape) == 1
 
     obs_dim = int(env.observation_space.shape[0])
-    act_dim = int(env.action_space.shape[0])
-    act_low = env.action_space.low
-    act_high = env.action_space.high
+    if args.discrete_action:
+        assert hasattr(env.action_space, "n")
+        act_dim = int(env.action_space.n)
+        act_low = None
+        act_high = None
+    else:
+        assert len(env.action_space.shape) == 1
+        act_dim = int(env.action_space.shape[0])
+        act_low = env.action_space.low
+        act_high = env.action_space.high
 
     cfg = SACConfig()
-    agent = SACAgent(obs_dim, act_dim, act_low, act_high, device, cfg)
-    buf = ReplayBuffer(obs_dim, act_dim, cfg.replay_size, device)
+    agent = SACAgent(obs_dim, act_dim, act_low, act_high, device, cfg, discrete_action=args.discrete_action)
+    buf = ReplayBuffer(obs_dim, act_dim, cfg.replay_size, device, discrete_action=args.discrete_action)
 
     start_time = time.time()
 

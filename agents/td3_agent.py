@@ -199,6 +199,7 @@ class TD3Continuous:
         act_low_t = torch.as_tensor(act_low, device=device, dtype=torch.float32)   # (act_dim,)
         act_high_t = torch.as_tensor(act_high, device=device, dtype=torch.float32) # (act_dim,)
         self.act_range = (act_high_t - act_low_t)  # (act_dim,)
+        self.act_scale = self.act_range * 0.5 #(act_dim,)
         self.act_low = act_low_t
         self.act_high = act_high_t
 
@@ -210,7 +211,7 @@ class TD3Continuous:
         a = self.actor(obs_t).squeeze(0)  # (act_dim,)
         if noise:
             # exploration noise scaled by action range
-            eps = torch.randn_like(a) * (self.cfg.explore_noise_std * self.act_range)
+            eps = torch.randn_like(a) * (self.cfg.explore_noise_std * self.act_scale)
             a = a + eps
         a = torch.clamp(a, self.act_low, self.act_high)
         return a.cpu().numpy()
@@ -232,8 +233,8 @@ class TD3Continuous:
             a2 = self.actor_t(obs2)  # (B, act_dim)
 
             # noise scaled by action range
-            noise = torch.randn_like(a2) * (cfg.target_noise_std * self.act_range)  # (B, act_dim)
-            noise = torch.clamp(noise, -cfg.target_noise_clip * self.act_range, cfg.target_noise_clip * self.act_range)
+            noise = torch.randn_like(a2) * (cfg.target_noise_std * self.act_scale)  # (B, act_dim)
+            noise = torch.clamp(noise, -cfg.target_noise_clip * self.act_scale, cfg.target_noise_clip * self.act_scale)
             a2 = a2 + noise
             a2 = torch.clamp(a2, self.act_low, self.act_high)  # (B, act_dim)
 
@@ -256,12 +257,22 @@ class TD3Continuous:
 
         # delayed actor + target updates
         if (self.update_step % cfg.policy_delay) == 0:
+            for p in self.q1.parameters():
+                p.requires_grad_(False)
+            for p in self.q2.parameters():
+                p.requires_grad_(False)
+
             a_pi = self.actor(obs)  # (B, act_dim)
             actor_loss = -self.q1(obs, a_pi).mean()  # scalar
 
             self.actor_opt.zero_grad(set_to_none=True)
             actor_loss.backward()
             self.actor_opt.step()
+
+            for p in self.q1.parameters():
+                p.requires_grad_(True)
+            for p in self.q2.parameters():
+                p.requires_grad_(True)
 
             # Polyak update all targets
             self._polyak(self.actor, self.actor_t, cfg.tau)
@@ -323,7 +334,8 @@ class ClippedDoubleDQN:
 
     @torch.no_grad()
     def select_action(self, obs: np.ndarray, eval_mode: bool = False) -> int:
-        self.total_steps += 1
+        if not eval_mode:
+            self.total_steps += 1
         if (not eval_mode) and (np.random.rand() < self._epsilon()):
             return np.random.randint(self.n_actions)
 
